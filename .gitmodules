@@ -1,0 +1,3 @@
+[submodule "pack/default/start/gruvbox.nvim"]
+	path = pack/default/start/gruvbox.nvim
+	url = https://github.com/ellisonleao/gruvbox.nvim.git

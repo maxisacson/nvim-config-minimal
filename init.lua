@@ -95,7 +95,7 @@ vim.opt.background = 'dark'
 vim.opt.hidden = true
 
 -- set colorscheme
-vim.cmd.colorscheme('unokai')
+vim.cmd.colorscheme('gruvbox')
 
 -- Window movement bindings
 vim.keymap.set('n', '<C-Left>', '<C-w>h')
