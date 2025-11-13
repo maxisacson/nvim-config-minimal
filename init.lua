@@ -92,8 +92,12 @@ vim.opt.termguicolors = true
 vim.opt.background = 'dark'
 
 -- set colorscheme
-vim.cmd.colorscheme('unokai')
-
+if not vim.uv.fs_stat(vim.fs.joinpath(vim.fn.stdpath('config'), 'pack', 'default', 'start', 'gruvbox')) then
+    local res = vim.system({ 'git', 'submodule', 'update', '--depth=1', '--init' }, { cwd = vim.fn.stdpath('config'), text = true }):wait()
+    vim.notify(res.stdout)
+    vim.cmd { cmd = 'packadd', args = { 'gruvbox' }, bang = true }
+end
+vim.cmd.colorscheme('gruvbox')
 
 -- Buffer management
 vim.keymap.set('n', '<Leader><Leader>', '<C-^>')
