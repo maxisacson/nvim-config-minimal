@@ -1,6 +1,3 @@
-local opt = vim.opt
-local g = vim.g
-
 -- Set indenting stuff
 vim.opt.tabstop = 4                    -- number of spaces in a <Tab>
 vim.opt.shiftwidth = 4                 -- number of spaces to use for autoindent. Should be == tabstop
@@ -87,35 +84,16 @@ vim.opt.swapfile = false
 vim.opt.backup = false
 vim.opt.undofile = true
 
+-- allow buffers to be open in the background
+vim.opt.hidden = true
+
 -- dark background and 24 bit colors
 vim.opt.termguicolors = true
 vim.opt.background = 'dark'
 
--- allow buffers to be open in the background
-vim.opt.hidden = true
-
 -- set colorscheme
 vim.cmd.colorscheme('unokai')
 
--- Window movement bindings
-vim.keymap.set('n', '<C-Left>', '<C-w>h')
-vim.keymap.set('n', '<C-Right>', '<C-w>l')
-vim.keymap.set('n', '<C-Up>', '<C-w>k')
-vim.keymap.set('n', '<C-Down>', '<C-w>j')
-vim.keymap.set('n', '<C-h>', '<C-w>h')
-vim.keymap.set('n', '<C-l>', '<C-w>l')
-vim.keymap.set('n', '<C-k>', '<C-w>k')
-vim.keymap.set('n', '<C-j>', '<C-w>j')
--- convenience mapping for CTRL_W
-vim.keymap.set('n', '`', '<C-w>')
-vim.keymap.set('n', '§', '<C-w>')
-
-
--- Window resize bindings
-vim.keymap.set('n', '<Leader>+', '<C-w>5+')
-vim.keymap.set('n', '<Leader>-', '<C-w>5-')
-vim.keymap.set('n', '<Leader>>', '<C-w>5>')
-vim.keymap.set('n', '<Leader><', '<C-w>5<')
 
 -- Buffer management
 vim.keymap.set('n', '<Leader><Leader>', '<C-^>')
@@ -131,10 +109,6 @@ vim.keymap.set('n', '<Leader>qc', ':cclose<CR>')
 vim.keymap.set('n', '<Leader>qo', ':copen<CR>')
 
 -- mappings for location list
-vim.keymap.set('n', ']l', ':lnext<CR>')
-vim.keymap.set('n', '[l', ':lprev<CR>')
-vim.keymap.set('n', ']L', ':llast<CR>')
-vim.keymap.set('n', '[L', ':lfirst<CR>')
 vim.keymap.set('n', '<Leader>lc', ':lclose<CR>')
 vim.keymap.set('n', '<Leader>lo', ':lopen<CR>')
 
@@ -157,3 +131,57 @@ vim.keymap.set('v', '<', "<gv")
 vim.keymap.set('v', '<Leader>y', '"+y')
 vim.keymap.set('n', '<Leader>y', '"+yy')
 vim.keymap.set('n', '<Leader>p', '"+p')
+
+-- natural navigation when using tmux
+local navigate = function(dir)
+    local tmux_env = os.getenv('TMUX')
+    local at_edge = vim.fn.winnr() == vim.fn.winnr(dir)
+    if tmux_env ~= nil and at_edge then
+        local socket = vim.split(tmux_env, ',')[1]
+        local pane = os.getenv('TMUX_PANE')
+        local dir_flags = { h = '-L', j = '-D', k = '-U', l = '-R' }
+        local pane_check = {
+            h = "'#{pane_at_left}'",
+            j = "'#{pane_at_bottom}'",
+            k = "'#{pane_at_top}'",
+            l = "'#{pane_at_right}'"
+        }
+        local command = { 'tmux', '-S', socket, 'if', pane_check[dir], "''",
+            string.format("select-pane -t '%s' %s", pane, dir_flags[dir])
+        }
+        vim.system(command, { text = true }):wait()
+    else
+        vim.cmd.wincmd(dir)
+    end
+end
+
+-- Window movement bindings
+vim.keymap.set('n', '<C-h>', function() navigate('h') end)
+vim.keymap.set('n', '<C-l>', function() navigate('l') end)
+vim.keymap.set('n', '<C-k>', function() navigate('k') end)
+vim.keymap.set('n', '<C-j>', function() navigate('j') end)
+
+-- natural window resizing
+local resize = function(dir)
+    local at_edge = vim.fn.winnr() == vim.fn.winnr(dir)
+    local edge_commands = {
+        h = '<',
+        l = '<',
+        k = '-',
+        j = '-',
+    }
+    local commands = {
+        h = '>',
+        l = '>',
+        k = '+',
+        j = '+',
+    }
+    local command = at_edge and edge_commands[dir] or commands[dir]
+    vim.cmd.wincmd(command)
+end
+
+-- Window resize bindings
+vim.keymap.set('n', '<M-h>', function() resize('h') end)
+vim.keymap.set('n', '<M-l>', function() resize('l') end)
+vim.keymap.set('n', '<M-k>', function() resize('k') end)
+vim.keymap.set('n', '<M-j>', function() resize('j') end)
