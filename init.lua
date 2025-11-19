@@ -66,9 +66,6 @@ vim.opt.splitbelow = true
 -- Highlight the current line
 vim.opt.cursorline = true
 
--- Highlight column
-vim.opt.colorcolumn = '+1'
-
 -- Enable mouse
 vim.opt.mouse = 'a'
 
@@ -91,24 +88,8 @@ vim.opt.hidden = true
 vim.opt.termguicolors = true
 vim.opt.background = 'dark'
 
-local function init_submodules()
-    local object = vim.system({ 'git', 'submodule', 'status' }, { cwd = vim.fn.stdpath('config'), text = true }):wait()
-    for line in vim.gsplit(object.stdout, '\n', { trimempty = true }) do
-        if vim.startswith(line, '-') then
-            local path = vim.split(line, ' ')[2]
-            local cmd = { 'git', 'submodule', 'update', '--depth=1', '--init', '--', path }
-            vim.system(cmd, { cwd = vim.fn.stdpath('config'), text = true }):wait()
-
-            local components = vim.split(vim.fs.normalize(path), '/')
-            local module = components[#components]
-            vim.cmd { cmd = 'packadd', args = { module }, bang = true }
-        end
-    end
-end
-init_submodules()
-
 -- set colorscheme
-vim.cmd.colorscheme('gruvbox')
+vim.cmd.colorscheme('retrobox')
 
 -- Buffer management
 vim.keymap.set('n', '<Leader><Leader>', '<C-^>')
