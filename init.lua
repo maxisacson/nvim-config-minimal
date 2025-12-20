@@ -181,3 +181,24 @@ vim.keymap.set('n', '<M-h>', function() resize('h') end)
 vim.keymap.set('n', '<M-l>', function() resize('l') end)
 vim.keymap.set('n', '<M-k>', function() resize('k') end)
 vim.keymap.set('n', '<M-j>', function() resize('j') end)
+
+vim.api.nvim_create_autocmd('BufReadPre', {
+    pattern = '*',
+    group = vim.api.nvim_create_augroup("ResetCursor", { clear = true }),
+    desc = "Reset cursor position",
+    callback = function(args)
+        vim.api.nvim_create_autocmd('FileType', {
+            buffer = args.buf,
+            once = true,
+            callback = function()
+                local line = vim.fn.line([['"]])
+                local ft = vim.bo.filetype
+                if line >= 1 and line <= vim.fn.line("$")
+                    and string.match(ft, 'commit') == nil
+                    and ft ~= 'xxd' and ft ~= 'gitrebase' then
+                    vim.cmd [[normal! g`"]]
+                end
+            end
+        })
+    end
+})
